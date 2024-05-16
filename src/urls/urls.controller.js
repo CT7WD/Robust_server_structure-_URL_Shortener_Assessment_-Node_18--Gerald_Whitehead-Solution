@@ -1,13 +1,17 @@
 const urlsData = require("../data/urls-data.js");
+const useRecords = require("../data/uses-data");
 
+
+// ***LIST URLS***
 function list(req, res) {
     const { id } = req.params;
     res.json({ data: urlsData.filter(id ? url => url.id == id : () => true) });
 }
 
+//FIND IF PROPERTY EXIST IS REQUEST BODY
 function bodyDataHas(propertyName) {
   return function (req, res, next) {
-    const { data: {} } = req.body;
+    const { data = {} } = req.body;
     if (data[propertyName]) {
       return next()
     }
@@ -18,7 +22,11 @@ function bodyDataHas(propertyName) {
   }
 }
 
+// GET LAST USED URL ID
 let lastUrlId = urlsData.reduce((maxId, url) => Math.max(maxId, url.id), 0);
+
+// GET LAST USED USE RECORD ID
+let lastUseRecordId = useRecords.reduce((maxId, use) => Math.max(maxId, use.id), 0);
 
 
 //FIND IF URL EXISTS
@@ -35,11 +43,23 @@ function urlExists(req, res, next) {
   });
 };
 
+// LOG USE
+function logUse(req, res, next) {
+  const { urlId } = req.params;
+  const newUseRecord = {
+    id: ++lastUseRecordId,
+    urlId: Number(urlId),
+    time: Date.now()
+  };
+  useRecords.push(newUseRecord);
+  next();
+}
+
 
 
 // ***CREATE***
 function create(req, res) {
-  const { data: { href, id } = {} } = = req.body;
+  const { data: { href, id } = {} } =  req.body;
   const newUrl = {
     href,
     id: ++lastUrlId
@@ -51,14 +71,47 @@ function create(req, res) {
 
 // ***READ***
   function read(req, res) {
-    
+    res.json({ data: res.locals.urlsData})
   }
+
+
+// ***UPDATE***
+function update(req, res) {
+    const url = res.locals.urlsData
+    const { data: { href } = {} } = req.body
+
+    url.href = href
+
+    res.json({ data: url })
+}
+
+
+
+
+
+
+
+
+
+
+
 // Export the create function to be used in routes
 module.exports = {
     create: [
         // bodyDataHas("id"),
-        // bodyDataHas("href"),
+        bodyDataHas("href"),
         create
     ],
-    list
+    read: [
+      urlExists,
+      logUse, 
+      read
+    ],
+    list,
+    update: [
+        urlExists,
+        bodyDataHas("href"),
+        // bodyDataHas("id"),
+        update
+    ]
 };
