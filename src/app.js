@@ -1,12 +1,13 @@
 const express = require("express");
 const app = express();
 const urlsRouter = require("./urls/urls.router");
-// const usersRouter = require("./users/users.router");
+const usesRouter = require("./uses/uses.router");
 
 app.use(express.json());
 
-app.use("/urls", urlsRouter); // Note: app.use
-// app.use("/users", usersRouter);
+// Note: app.use
+app.use("/urls", urlsRouter);
+app.use("/uses", usesRouter);
 
 // Not found handler
 app.use((request, response, next) => {
@@ -14,7 +15,7 @@ app.use((request, response, next) => {
 });
 
 // Error handler
-app.use((error, req, res, next) => {
+app.use((error, req, res) => {
   console.error(error);
   const { status = 500, message = "Something went wrong!" } = error;
   res.status(status).json({ error: message });

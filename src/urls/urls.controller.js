@@ -5,7 +5,7 @@ const useRecords = require("../data/uses-data");
 // ***LIST URLS***
 function list(req, res) {
     const { id } = req.params;
-    res.json({ data: urlsData.filter(id ? url => url.id == id : () => true) });
+    res.json({ data: urlsData.filter(id ? url => url.id === id : () => true) });
 }
 
 //FIND IF PROPERTY EXIST IS REQUEST BODY
@@ -41,7 +41,7 @@ function urlExists(req, res, next) {
     status: 404,
     message: `URL id not found: ${urlId}`,
   });
-};
+}
 
 // LOG USE
 function logUse(req, res, next) {
