@@ -1,13 +1,7 @@
-const urlsData = require("../data/urls-data.js");
-const useRecords = require("../data/uses-data");
+const urls = require("../data/urls-data.js");
+const uses = require("../data/uses-data");
 
-
-// ***LIST URLS***
-function list(req, res) {
-    const { id } = req.params;
-    res.json({ data: urlsData.filter(id ? url => url.id === id : () => true) });
-}
-
+// ****FUNCTIONS****
 //FIND IF PROPERTY EXIST IS REQUEST BODY
 function bodyDataHas(propertyName) {
   return function (req, res, next) {
@@ -21,13 +15,6 @@ function bodyDataHas(propertyName) {
     })
   }
 }
-
-// GET LAST USED URL ID
-let lastUrlId = urlsData.reduce((maxId, url) => Math.max(maxId, url.id), 0);
-
-// GET LAST USED USE RECORD ID
-let lastUseRecordId = useRecords.reduce((maxId, use) => Math.max(maxId, use.id), 0);
-
 
 //FIND IF URL EXISTS
 function urlExists(req, res, next) {
@@ -55,11 +42,24 @@ function logUse(req, res, next) {
   next();
 }
 
+// GET LAST USED URL ID
+let lastUrlId = urlsData.reduce((maxId, url) => Math.max(maxId, url.id), 0);
+
+// GET LAST USED USE RECORD ID
+let lastUseRecordId = useRecords.reduce((maxId, use) => Math.max(maxId, use.id), 0);
+
+
+// ****HANDLERS**** 
+// ***LIST URLS***
+function list(req, res) {
+    const { id } = req.params;
+    res.json({ data: urlsData.filter(id ? url => url.id === id : () => true) });
+}
 
 
 // ***CREATE***
 function create(req, res) {
-  const { data: { href, id } = {} } =  req.body;
+  const { data: { href } = {} } =  req.body;
   const newUrl = {
     href,
     id: ++lastUrlId

@@ -9,13 +9,14 @@ app.use(express.json());
 app.use("/urls", urlsRouter);
 app.use("/uses", usesRouter);
 
-// Not found handler
+// 'NOT FOUND' HANDLER
 app.use((request, response, next) => {
-  next(`Not found: ${request.originalUrl}`);
+  next({status : 404,
+        message : `Not found: ${request.originalUrl}`});
 });
 
-// Error handler
-app.use((error, req, res) => {
+// ERROR HANDLER
+app.use((error, req, res, next) => {
   console.error(error);
   const { status = 500, message = "Something went wrong!" } = error;
   res.status(status).json({ error: message });

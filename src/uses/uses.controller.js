@@ -15,7 +15,7 @@ function list(req, res) {
 //FIND IF A USE EXISTS
 function useExists(req, res, next) {
     const { useId } = req.params;
-    const foundUse = useRecords.find(use => use.id === Number(useId));
+    const foundUse = useRecords.find(use => use.id === useId);
     if (foundUse) {
         res.locals.useRecords = foundUse;
         return next();
@@ -71,8 +71,6 @@ module.exports = {
     list,
     delete: [
         useExists,
-        // bodyDataHas("href"),
-        // bodyDataHas("id"),
         destroy
     ]
 };
