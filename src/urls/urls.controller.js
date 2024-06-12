@@ -1,6 +1,13 @@
 const urls = require("../data/urls-data.js");
 const uses = require("../data/uses-data");
 
+
+// GET LAST USED URL ID
+let lastUrlId = urls.reduce((maxId, url) => Math.max(maxId, url.id), 0);
+
+// GET LAST USED USE RECORD ID
+let lastUsesId = uses.reduce((maxId, use) => Math.max(maxId, use.id), 0);
+
 // ****FUNCTIONS****
 //FIND IF PROPERTY EXIST IS REQUEST BODY
 function bodyDataHas(propertyName) {
@@ -19,9 +26,9 @@ function bodyDataHas(propertyName) {
 //FIND IF URL EXISTS
 function urlExists(req, res, next) {
   const { urlId } = req.params;
-  const foundUrl = urlsData.find(url => url.id === Number(urlId));
+  const foundUrl = urls.find(url => url.id === Number(urlId));
   if (foundUrl) {
-    res.locals.urlsData = foundUrl;
+    res.locals.urlsId = foundUrl.id;
     return next();
   }
   next({
@@ -32,28 +39,20 @@ function urlExists(req, res, next) {
 
 // LOG USE
 function logUse(req, res, next) {
-  const { urlId } = req.params;
-  const newUseRecord = {
-    id: ++lastUseRecordId,
+  const newUses = {
+    id: ++lastUsesId,
     urlId: Number(urlId),
     time: Date.now()
   };
-  useRecords.push(newUseRecord);
-  next();
+  uses.push(newUses);
 }
-
-// GET LAST USED URL ID
-let lastUrlId = urlsData.reduce((maxId, url) => Math.max(maxId, url.id), 0);
-
-// GET LAST USED USE RECORD ID
-let lastUseRecordId = useRecords.reduce((maxId, use) => Math.max(maxId, use.id), 0);
 
 
 // ****HANDLERS**** 
 // ***LIST URLS***
 function list(req, res) {
     const { id } = req.params;
-    res.json({ data: urlsData.filter(id ? url => url.id === id : () => true) });
+    res.json({ data: urls.filter(id ? url => url.id === id : () => true) });
 }
 
 
@@ -64,20 +63,22 @@ function create(req, res) {
     href,
     id: ++lastUrlId
   }
-  urlsData.push(newUrl)
+  urls.push(newUrl)
   res.status(201).json({ data: newUrl })
 }
 
 
 // ***READ***
   function read(req, res) {
-    res.json({ data: res.locals.urlsData})
+    const { urlId } = req.params;
+    logUse(urlId);
+    res.json({ data: res.locals.urls})
   }
 
 
 // ***UPDATE***
 function update(req, res) {
-    const url = res.locals.urlsData
+    const url = res.locals.urls
     const { data: { href } = {} } = req.body
 
     url.href = href
@@ -98,20 +99,18 @@ function update(req, res) {
 // Export the create function to be used in routes
 module.exports = {
     create: [
-        // bodyDataHas("id"),
         bodyDataHas("href"),
         create
     ],
     read: [
-      urlExists,
-      logUse, 
+      urlExists, 
       read
     ],
     list,
     update: [
         urlExists,
         bodyDataHas("href"),
-        // bodyDataHas("id"),
         update
-    ]
+    ],
+    urlExists,
 };
